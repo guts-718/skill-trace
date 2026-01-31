@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "SkillTrace Tracker",
+  "version": "0.1",
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
