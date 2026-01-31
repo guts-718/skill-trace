@@ -29,6 +29,7 @@ def persist_active_session():
 
 def finalize_last_session():
     global last_session
+
     if last_session is None:
         return
 
@@ -37,10 +38,21 @@ def finalize_last_session():
     )
 
     insert_session(last_session)
+
+    # delete persisted active session file
+    if os.path.exists(ACTIVE_SESSION_FILE):
+        os.remove(ACTIVE_SESSION_FILE)
+
     last_session = None
 
+
 def process_event(event):
+    print("EVENT:", event.url)
     global last_session
+    if last_session:
+        print("LAST SESSION URL:", last_session.url)
+
+    
 
     if last_session is None:
         last_session = Session(
@@ -58,7 +70,7 @@ def process_event(event):
         last_session.end_time = event.timestamp
         persist_active_session()
         return
-
+    print("FINALIZING SESSION:", last_session.url)
     finalize_last_session()
 
     last_session = Session(
