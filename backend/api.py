@@ -32,5 +32,6 @@ def get_today_sessions():
     start_ts = int(start_of_day.timestamp())
     end_ts = int(now.timestamp())
 
-    sessions = get_sessions_between(start_ts, end_ts)
+    # sessions = get_sessions_between(0, 2000)
+    sessions = get_sessions_between(start_ts,end_ts)
     return sessions
