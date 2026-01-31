@@ -1,0 +1,22 @@
+# Virtual Environment
+skillenv/
+venv/
+.env/
+skilltrace.db
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite database
+*.db
+
+# Runtime files
+runtime/active_session.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
