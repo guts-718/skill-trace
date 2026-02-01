@@ -3,6 +3,7 @@ skillenv/
 venv/
 .env/
 skilltrace.db
+.env
 # Python cache
 __pycache__/
 *.pyc

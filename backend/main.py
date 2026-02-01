@@ -1,5 +1,10 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 import uvicorn
+from scheduler import scheduler_loop
+import threading
+
 
 from db import init_db
 from api import router
@@ -26,4 +31,6 @@ if __name__ == "__main__":
     init_db()
     load_active_session()
     load_rules()
+    t = threading.Thread(target=scheduler_loop, daemon=True)
+    t.start()
     uvicorn.run(app, host="0.0.0.0", port=PORT)

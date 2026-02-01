@@ -84,3 +84,10 @@ def fetch_settings():
 def update_settings(req: SettingsRequest):
     save_settings(req.dict())
     return {"status": "ok"}
+
+
+@router.post("/reports/send-now")
+def send_now():
+    from scheduler import generate_and_send_once
+    generate_and_send_once()
+    return {"status": "sent"}

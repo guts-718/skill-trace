@@ -213,7 +213,8 @@ def save_settings(s):
             email=?,
             telegram_chat_id=?,
             enable_email=?,
-            enable_telegram=?
+            enable_telegram=?,
+            last_sent_date=""
         WHERE id=1
     """, (
         s["report_time"],
@@ -222,6 +223,30 @@ def save_settings(s):
         int(s["enable_email"]),
         int(s["enable_telegram"])
     ))
+
+    conn.commit()
+    conn.close()
+
+
+def get_last_sent_date():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT last_sent_date FROM user_settings WHERE id=1")
+    val = cur.fetchone()[0]
+    conn.close()
+    return val or ""
+
+
+def update_last_sent_date(date_str: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE user_settings
+        SET last_sent_date = ?
+        WHERE id=1
+    """, (date_str,))
 
     conn.commit()
     conn.close()
