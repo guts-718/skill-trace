@@ -24,6 +24,26 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_settings (
+        id INTEGER PRIMARY KEY,
+        report_time TEXT,
+        email TEXT,
+        telegram_chat_id TEXT,
+        enable_email INTEGER,
+        enable_telegram INTEGER,
+        last_sent_date TEXT
+    )
+    """)
+
+
+    cursor.execute("""
+    INSERT OR IGNORE INTO user_settings
+    (id, report_time, email, telegram_chat_id, enable_email, enable_telegram, last_sent_date)
+    VALUES (1, "21:00", "", "", 0, 0, "")
+    """)
+
+
 
     conn.commit()
     conn.close()
@@ -95,6 +115,113 @@ def update_user_category(session_id: int, category: str):
         SET user_category = ?
         WHERE id = ?
     """, (category, session_id))
+
+    conn.commit()
+    conn.close()
+
+def get_total_time_between(start_ts: int, end_ts: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT SUM(duration_sec)
+        FROM web_sessions
+        WHERE start_time >= ? AND start_time <= ?
+    """, (start_ts, end_ts))
+
+    val = cur.fetchone()[0]
+    conn.close()
+    return val or 0
+
+
+def get_category_breakdown(start_ts: int, end_ts: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+          COALESCE(user_category, category) as cat,
+          SUM(duration_sec)
+        FROM web_sessions
+        WHERE start_time >= ? AND start_time <= ?
+        GROUP BY cat
+    """, (start_ts, end_ts))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return {r[0]: r[1] for r in rows}
+
+
+def get_top_domains(start_ts: int, end_ts: int, limit=5):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT domain, SUM(duration_sec) as t
+        FROM web_sessions
+        WHERE start_time >= ? AND start_time <= ?
+        GROUP BY domain
+        ORDER BY t DESC
+        LIMIT ?
+    """, (start_ts, end_ts, limit))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [{"domain": r[0], "time": r[1]} for r in rows]
+
+
+def get_session_count(start_ts: int, end_ts: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM web_sessions
+        WHERE start_time >= ? AND start_time <= ?
+    """, (start_ts, end_ts))
+
+    val = cur.fetchone()[0]
+    conn.close()
+    return val
+
+def get_settings():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT report_time, email, telegram_chat_id, enable_email, enable_telegram FROM user_settings WHERE id=1")
+    row = cur.fetchone()
+    conn.close()
+
+    return {
+        "report_time": row[0],
+        "email": row[1],
+        "telegram_chat_id": row[2],
+        "enable_email": bool(row[3]),
+        "enable_telegram": bool(row[4])
+    }
+
+
+def save_settings(s):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE user_settings
+        SET report_time=?,
+            email=?,
+            telegram_chat_id=?,
+            enable_email=?,
+            enable_telegram=?
+        WHERE id=1
+    """, (
+        s["report_time"],
+        s["email"],
+        s["telegram_chat_id"],
+        int(s["enable_email"]),
+        int(s["enable_telegram"])
+    ))
 
     conn.commit()
     conn.close()

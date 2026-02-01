@@ -4,9 +4,22 @@ from session_manager import process_event
 from datetime import datetime, timezone
 from db import get_sessions_between
 from pydantic import BaseModel
+from datetime import datetime, timezone
+from report_generator import generate_daily_report
+from db import get_settings, save_settings
+from pydantic import BaseModel
+
 
 class OverrideRequest(BaseModel):
     category: str
+
+
+class SettingsRequest(BaseModel):
+    report_time: str
+    email: str
+    telegram_chat_id: str
+    enable_email: bool
+    enable_telegram: bool
 
 
 router = APIRouter()
@@ -52,3 +65,22 @@ def override_category(session_id: int, req: OverrideRequest):
     update_user_category(session_id, req.category)
     return {"status": "ok"}
 
+
+
+@router.get("/reports/daily")
+def get_daily_report(date: str | None = None):
+    if date is None:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    return generate_daily_report(date)
+
+
+@router.get("/settings")
+def fetch_settings():
+    return get_settings()
+
+
+@router.post("/settings")
+def update_settings(req: SettingsRequest):
+    save_settings(req.dict())
+    return {"status": "ok"}

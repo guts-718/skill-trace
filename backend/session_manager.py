@@ -40,7 +40,7 @@ def finalize_last_session():
 
     # drop very short sessions (noise)
     if last_session.duration_sec < 5: # need to make it 45. but for dev for now it is 5
-        last_session = None
+        # last_session = None
         if os.path.exists(ACTIVE_SESSION_FILE):
             os.remove(ACTIVE_SESSION_FILE)
         return
