@@ -5,6 +5,7 @@ from db import get_settings, get_last_sent_date, update_last_sent_date
 from report_generator import generate_daily_report
 from notifiers.email_sender import send_email
 from notifiers.report_formatter import format_report_text
+from notifiers.telegram_sender import send_telegram
 
 
 def scheduler_loop():
@@ -39,9 +40,14 @@ def scheduler_loop():
                         f"SkillTrace Daily Report - {today}",
                         body
                     )
+                
+                if settings["enable_telegram"] and settings["telegram_chat_id"]:
+                    body = format_report_text(report)
+                    send_telegram(settings["telegram_chat_id"], body)
+
 
                 update_last_sent_date(today)
-
+            
         except Exception as e:
             print("Scheduler error:", e)
 
