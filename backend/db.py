@@ -19,9 +19,11 @@ def init_db():
         start_time INTEGER NOT NULL,
         end_time INTEGER NOT NULL,
         duration_sec INTEGER NOT NULL,
-        category TEXT NOT NULL
-)
+        category TEXT NOT NULL,
+        user_category TEXT
+    )
     """)
+
 
     conn.commit()
     conn.close()
@@ -55,8 +57,8 @@ def get_sessions_between(start_ts: int, end_ts: int):
     cursor = conn.cursor()
 
     cursor.execute("""
-       SELECT url, domain, title, start_time, end_time, duration_sec, category
-       FROM web_sessions
+     SELECT id, url, domain, title, start_time, end_time, duration_sec, category, user_category
+     FROM web_sessions
         WHERE start_time >= ? AND start_time <= ?
         ORDER BY start_time ASC
     """, (start_ts, end_ts))
@@ -67,15 +69,32 @@ def get_sessions_between(start_ts: int, end_ts: int):
     sessions = []
     for r in rows:
         sessions.append({
-            "url": r[0],
-            "domain": r[1],
-            "title": r[2],
-            "start_time": r[3],
-            "end_time": r[4],
-            "duration_sec": r[5],
-            "category": r[6]
+            "id": r[0],
+            "url": r[1],
+            "domain": r[2],
+            "title": r[3],
+            "start_time": r[4],
+            "end_time": r[5],
+            "duration_sec": r[6],
+            "category": r[7],
+            "user_category": r[8]
         })
 
 
 
+
     return sessions
+
+
+def update_user_category(session_id: int, category: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE web_sessions
+        SET user_category = ?
+        WHERE id = ?
+    """, (category, session_id))
+
+    conn.commit()
+    conn.close()

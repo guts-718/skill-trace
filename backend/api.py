@@ -3,6 +3,10 @@ from models import Event
 from session_manager import process_event
 from datetime import datetime, timezone
 from db import get_sessions_between
+from pydantic import BaseModel
+
+class OverrideRequest(BaseModel):
+    category: str
 
 
 router = APIRouter()
@@ -35,4 +39,16 @@ def get_today_sessions():
 
     # sessions = get_sessions_between(0, 2000)
     sessions = get_sessions_between(start_ts,end_ts)
+    for s in sessions:
+        if s["user_category"]:
+            s["category"] = s["user_category"]
+
+
     return sessions
+
+@router.post("/sessions/{session_id}/override")
+def override_category(session_id: int, req: OverrideRequest):
+    from db import update_user_category
+    update_user_category(session_id, req.category)
+    return {"status": "ok"}
+

@@ -1,4 +1,4 @@
-export default function SessionTable({ sessions }) {
+export default function SessionTable({ sessions , onOverride}) {
   return (
     <table border="1" cellPadding="8">
       <thead>
@@ -9,6 +9,7 @@ export default function SessionTable({ sessions }) {
           <th>Category</th>
           <th>Title</th>
           <th>Domain</th>
+          <th>Action</th>
         </tr>
       </thead>
 
@@ -21,6 +22,12 @@ export default function SessionTable({ sessions }) {
             <td style={{ fontWeight: "bold" }}>{s.category}</td>
             <td>{s.title}</td>
             <td>{s.domain}</td>
+            <td>
+              <button onClick={() => onOverride(s.id)}>
+                Change
+              </button>
+            </td>
+
           </tr>
         ))}
       </tbody>

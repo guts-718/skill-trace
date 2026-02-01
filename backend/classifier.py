@@ -32,23 +32,24 @@ def load_rules():
 
     print("Rules v2 loaded")
 
-
 def classify_session(session):
-    print("REFERRER:", session.referrer)
-
     scores = {}
 
     domain = (session.domain or "").lower()
     title = (session.title or "").lower()
     url = (session.url or "").lower()
+    referrer = (session.referrer or "").lower()
 
     def add_score(cat, val):
         scores[cat] = scores.get(cat, 0) + val
+
+    has_direct_match = False
 
     # 1) Direct domain
     for d, cat in rules["direct_domains"].items():
         if d in domain:
             add_score(cat, 3)
+            has_direct_match = True
 
     # 2) Domain groups
     for group, domains in rules["domain_groups"].items():
@@ -68,8 +69,20 @@ def classify_session(session):
         if word in title:
             add_score(cat, 1)
 
+    # 5) Referrer boost (only if no strong direct match)
+    if not has_direct_match and referrer:
+        for d, cat in rules["direct_domains"].items():
+            if d in referrer:
+                add_score(cat, 1)
+
+        for group, domains in rules["domain_groups"].items():
+            for d in domains:
+                if d in referrer:
+                    cat = rules["group_category"].get(group)
+                    if cat:
+                        add_score(cat, 1)
+
     if not scores:
         return "Other"
 
     return max(scores.items(), key=lambda x: x[1])[0]
-

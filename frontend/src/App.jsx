@@ -15,6 +15,22 @@ function App() {
     setLoading(false);
   }
 
+  async function overrideCategory(id) {
+  const cat = prompt("Enter new category");
+  if (!cat) return;
+
+  await fetch(`http://localhost:8000/sessions/${id}/override`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ category: cat })
+  });
+
+  loadSessions();
+}
+
+
   useEffect(() => {
     loadSessions();
 
@@ -35,7 +51,7 @@ function App() {
 
       <TotalTime sessions={sessions} />
 
-      <SessionTable sessions={sessions} />
+      <SessionTable sessions={sessions} onOverride={overrideCategory} />
     </div>
   );
 }
