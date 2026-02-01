@@ -14,6 +14,7 @@ def health():
 @router.post("/event")
 def receive_event(event: Event):
     process_event(event)
+    print(event)
     return {"status": "ok"}
 
 

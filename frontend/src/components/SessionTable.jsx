@@ -6,6 +6,7 @@ export default function SessionTable({ sessions }) {
           <th>Start</th>
           <th>End</th>
           <th>Duration (sec)</th>
+          <th>Category</th>
           <th>Title</th>
           <th>Domain</th>
         </tr>
@@ -17,6 +18,7 @@ export default function SessionTable({ sessions }) {
             <td>{new Date(s.start_time * 1000).toLocaleTimeString()}</td>
             <td>{new Date(s.end_time * 1000).toLocaleTimeString()}</td>
             <td>{s.duration_sec}</td>
+            <td style={{ fontWeight: "bold" }}>{s.category}</td>
             <td>{s.title}</td>
             <td>{s.domain}</td>
           </tr>

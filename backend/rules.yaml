@@ -1,0 +1,147 @@
+direct_domains:
+  # Competitive Programming / DSA
+  leetcode.com: DSA
+  codeforces.com: DSA
+  codechef.com: DSA
+  atcoder.jp: DSA
+  spoj.com: DSA
+  hackerrank.com: DSA
+  geeksforgeeks.org: DSA
+  interviewbit.com: DSA
+
+  # Coding / Repos
+  github.com: Coding
+  gitlab.com: Coding
+  bitbucket.org: Coding
+
+  # Docs / Q&A
+  stackoverflow.com: Docs
+  stackexchange.com: Docs
+  superuser.com: Docs
+  serverfault.com: Docs
+
+  # ML / AI Platforms
+  huggingface.co: ML
+  paperswithcode.com: ML
+  kaggle.com: ML
+
+  # Cloud / Infra
+  aws.amazon.com: Docs
+  cloud.google.com: Docs
+  learn.microsoft.com: Docs
+
+domain_groups:
+  search:
+    - google.com
+    - bing.com
+    - duckduckgo.com
+    - brave.com
+    - yahoo.com
+
+  learning:
+    - medium.com
+    - dev.to
+    - freecodecamp.org
+    - tutorialspoint.com
+    - w3schools.com
+    - realpython.com
+    - css-tricks.com
+    - towardsdatascience.com
+    - digitalocean.com
+
+  research:
+    - arxiv.org
+    - scholar.google.com
+    - research.google.com
+    - paperswithcode.com
+    - openreview.net
+    - semanticscholar.org
+
+  video:
+    - youtube.com
+    - vimeo.com
+
+  forums:
+    - reddit.com
+    - discourse.org
+
+  docs:
+    - developer.mozilla.org
+    - docs.python.org
+    - kubernetes.io
+    - nodejs.org
+    - react.dev
+
+group_category:
+  search: Research
+  learning: Tutorial
+  research: Docs
+  video: Tutorial
+  forums: Discussion
+  docs: Docs
+
+path_keywords:
+  # DSA
+  problems: DSA
+  problem: DSA
+  practice: DSA
+  contest: DSA
+  submissions: DSA
+  discuss: DSA
+  editorial: DSA
+
+  # Tutorials / Guides
+  tutorial: Tutorial
+  guide: Tutorial
+  walkthrough: Tutorial
+  getting-started: Tutorial
+  quickstart: Tutorial
+  examples: Tutorial
+  learn: Tutorial
+
+  # Docs
+  docs: Docs
+  documentation: Docs
+  api: Docs
+  reference: Docs
+  manual: Docs
+  spec: Docs
+
+  # Blogs
+  blog: Tutorial
+  post: Tutorial
+  article: Tutorial
+
+  # Research
+  paper: Docs
+  pdf: Docs
+  preprint: Docs
+
+title_keywords:
+  # Tutorial intent
+  tutorial: Tutorial
+  guide: Tutorial
+  how to: Tutorial
+  step by step: Tutorial
+  explained: Tutorial
+  introduction: Tutorial
+  beginner: Tutorial
+  advanced: Tutorial
+
+  # Docs
+  documentation: Docs
+  reference: Docs
+  api: Docs
+  specification: Docs
+
+  # DSA / Interview
+  interview: DSA
+  coding problem: DSA
+  solution: DSA
+  optimal: DSA
+  brute force: DSA
+
+  # Research
+  paper: Docs
+  survey: Docs
+  benchmark: Docs

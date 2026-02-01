@@ -3,6 +3,7 @@ import os
 from models import Session
 from config import ACTIVE_SESSION_FILE
 from db import insert_session
+from classifier import classify_session
 
 last_session = None
 
@@ -25,7 +26,7 @@ def persist_active_session():
     if last_session is None:
         return
     with open(ACTIVE_SESSION_FILE, "w") as f:
-        json.dump(last_session.dict(), f)
+        json.dump(last_session.model_dump(), f)
 
 def finalize_last_session():
     global last_session
@@ -37,6 +38,18 @@ def finalize_last_session():
         last_session.end_time - last_session.start_time
     )
 
+    # drop very short sessions (noise)
+    if last_session.duration_sec < 5: # need to make it 45. but for dev for now it is 5
+        last_session = None
+        if os.path.exists(ACTIVE_SESSION_FILE):
+            os.remove(ACTIVE_SESSION_FILE)
+        return
+
+
+    # classify
+    category = classify_session(last_session)
+    last_session.category = category
+
     insert_session(last_session)
 
     # delete persisted active session file
@@ -44,6 +57,7 @@ def finalize_last_session():
         os.remove(ACTIVE_SESSION_FILE)
 
     last_session = None
+
 
 
 def process_event(event):
@@ -61,7 +75,9 @@ def process_event(event):
             title=event.title,
             start_time=event.timestamp,
             end_time=event.timestamp,
-            duration_sec=0
+            duration_sec=0,
+            category="Other",
+            referrer=event.referrer
         )
         persist_active_session()
         return
@@ -79,6 +95,8 @@ def process_event(event):
         title=event.title,
         start_time=event.timestamp,
         end_time=event.timestamp,
-        duration_sec=0
+        duration_sec=0,
+        category="Other",
+        referrer=event.referrer
     )
     persist_active_session()

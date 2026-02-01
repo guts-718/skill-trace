@@ -18,8 +18,9 @@ def init_db():
         title TEXT NOT NULL,
         start_time INTEGER NOT NULL,
         end_time INTEGER NOT NULL,
-        duration_sec INTEGER NOT NULL
-    )
+        duration_sec INTEGER NOT NULL,
+        category TEXT NOT NULL
+)
     """)
 
     conn.commit()
@@ -32,16 +33,18 @@ def insert_session(session: Session):
 
     cursor.execute("""
         INSERT INTO web_sessions
-        (url, domain, title, start_time, end_time, duration_sec)
-        VALUES (?, ?, ?, ?, ?, ?)
+        (url, domain, title, start_time, end_time, duration_sec, category)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         session.url,
         session.domain,
         session.title,
         session.start_time,
         session.end_time,
-        session.duration_sec
+        session.duration_sec,
+        session.category
     ))
+
 
     conn.commit()
     conn.close()
@@ -52,8 +55,8 @@ def get_sessions_between(start_ts: int, end_ts: int):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT url, domain, title, start_time, end_time, duration_sec
-        FROM web_sessions
+       SELECT url, domain, title, start_time, end_time, duration_sec, category
+       FROM web_sessions
         WHERE start_time >= ? AND start_time <= ?
         ORDER BY start_time ASC
     """, (start_ts, end_ts))
@@ -69,7 +72,10 @@ def get_sessions_between(start_ts: int, end_ts: int):
             "title": r[2],
             "start_time": r[3],
             "end_time": r[4],
-            "duration_sec": r[5]
+            "duration_sec": r[5],
+            "category": r[6]
         })
+
+
 
     return sessions

@@ -1,21 +1,23 @@
+let lastUrl = null;
 const BACKEND_URL = "http://localhost:8000/event";
-
-let lastSentUrl = null;
 
 function sendEvent(tab) {
   if (!tab || !tab.url) return;
 
-  if (tab.url === lastSentUrl) return;
-
-  lastSentUrl = tab.url;
+  if (tab.url === lastUrl) return;
 
   const payload = {
     url: tab.url,
     title: tab.title || "",
     domain: new URL(tab.url).hostname,
+    referrer: lastUrl,
     timestamp: Math.floor(Date.now() / 1000)
   };
-  console.log("About to send event");
+
+  lastUrl = tab.url;
+
+  console.log("Sending event:", payload);
+
   fetch(BACKEND_URL, {
     method: "POST",
     headers: {
@@ -23,9 +25,10 @@ function sendEvent(tab) {
     },
     body: JSON.stringify(payload)
   }).catch((e) => {
-    console.warn("Error ",e);
+    console.warn("Error ", e);
   });
 }
+
 
 // When user switches tab
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
