@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from report_generator import generate_daily_report
 from db import get_settings, save_settings
 from pydantic import BaseModel
-from leetcode.sync import sync_leetcode
+from leetcode.sync import sync_leetcode_sequential, sync_leetcode_concurrent
 from db import get_settings
 
 
@@ -113,7 +113,8 @@ def leetcode_sync():
     if not username:
         return {"error": "leetcode_username not set"}
 
-    new_count = sync_leetcode(username)
+    # new_count = sync_leetcode_sequential(username)
+    new_count = sync_leetcode_concurrent(username)
     return {
         "status": "ok",
         "new_records": new_count
