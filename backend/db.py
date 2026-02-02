@@ -36,6 +36,19 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS leetcode_submissions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        problem_id INTEGER,
+        title TEXT,
+        title_slug TEXT,
+        difficulty TEXT,
+        tags TEXT,
+        solved_at INTEGER,
+        UNIQUE(problem_id, solved_at)
+    )
+
+    """)
 
     cursor.execute("""
     INSERT OR IGNORE INTO user_settings
@@ -250,3 +263,31 @@ def update_last_sent_date(date_str: str):
 
     conn.commit()
     conn.close()
+
+
+def insert_leetcode_submission(problem_id, title, title_slug, difficulty, tags, solved_at):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT OR IGNORE INTO leetcode_submissions
+        (problem_id, title, title_slug, difficulty, tags, solved_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        problem_id,
+        title,
+        title_slug,
+        difficulty,
+        ",".join(tags),
+        solved_at
+    ))
+
+    print("Attempt insert:", problem_id, solved_at)
+    inserted = cur.rowcount
+    print("Rowcount:", inserted)
+
+    # inserted = cur.rowcount  # 1 if inserted, 0 if ignored
+    conn.commit()
+    conn.close()
+
+    return inserted
