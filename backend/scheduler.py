@@ -6,6 +6,8 @@ from report_generator import generate_daily_report
 from notifiers.email_sender import send_email
 from notifiers.report_formatter import format_report_text
 from notifiers.telegram_sender import send_telegram
+from leetcode.sync import maybe_sync_leetcode
+from db import get_settings
 
 
 def scheduler_loop():
@@ -14,7 +16,10 @@ def scheduler_loop():
     while True:
         try:
             settings = get_settings()
+            username = settings.get("leetcode_username")
 
+            if username:
+                maybe_sync_leetcode(username, min_gap_sec=1800)
             report_time = settings["report_time"]  # "HH:MM"
             now = datetime.now()
             current_time = now.strftime("%H:%M")

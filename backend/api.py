@@ -10,6 +10,7 @@ from db import get_settings, save_settings
 from pydantic import BaseModel
 from leetcode.sync import sync_leetcode_sequential, sync_leetcode_concurrent
 from db import get_settings
+from leetcode.sync import maybe_sync_leetcode
 
 
 
@@ -119,3 +120,15 @@ def leetcode_sync():
         "status": "ok",
         "new_records": new_count
     }
+
+
+@router.post("/leetcode/sync-ui")
+def leetcode_sync_ui():
+    settings = get_settings()
+    username = settings.get("leetcode_username")
+
+    if not username:
+        return {"error": "leetcode_username not set"}
+
+    new_count = maybe_sync_leetcode(username, min_gap_sec=60) # for testing doing it 60 for prod would have it 300sec
+    return {"status": "ok", "new_records": new_count}

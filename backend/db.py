@@ -33,7 +33,8 @@ def init_db():
         enable_email INTEGER,
         enable_telegram INTEGER,
         last_sent_date TEXT,
-        leetcode_username
+        leetcode_username,
+        last_leetcode_sync
     )
     """)
 
@@ -66,6 +67,15 @@ def init_db():
         """)
     except:
         pass
+
+    try:
+        cursor.execute("""
+        ALTER TABLE user_settings
+        ADD COLUMN last_leetcode_sync INTEGER
+        """)
+    except:
+        pass
+
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS leetcode_problems (
@@ -225,7 +235,7 @@ def get_settings():
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT report_time, email, telegram_chat_id, enable_email, enable_telegram, leetcode_username FROM user_settings WHERE id=1")
+    cur.execute("SELECT report_time, email, telegram_chat_id,enable_email, enable_telegram,leetcode_username, last_leetcode_sync FROM user_settings WHERE id=1")
     row = cur.fetchone()
     conn.close()
 
@@ -235,7 +245,8 @@ def get_settings():
     "telegram_chat_id": row[2],
     "enable_email": bool(row[3]),
     "enable_telegram": bool(row[4]),
-    "leetcode_username": row[5]
+    "leetcode_username": row[5],
+    "last_leetcode_sync": row[6]
     }
 
 
@@ -359,6 +370,19 @@ def cache_problem(problem):
         problem["difficulty"],
         ",".join(problem["tags"])
     ))
+
+    conn.commit()
+    conn.close()
+
+def update_last_leetcode_sync(ts: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE user_settings
+        SET last_leetcode_sync=?
+        WHERE id=1
+    """, (ts,))
 
     conn.commit()
     conn.close()

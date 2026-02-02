@@ -2,10 +2,17 @@ FETCH_LIMIT = 20
 SLEEP_BETWEEN_REQUESTS = 0.4 # This need refinement.
 MAX_WORKERS = 4
 USERNAME="ratneshk01"
+leetcode_sync_lock = False
+
+
 import os
 import time
 from db import get_cached_problem, cache_problem
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+from db import update_last_leetcode_sync, get_settings
+
+
 
 
 from leetcode.client import (
@@ -28,6 +35,12 @@ def delete_db():
 
 
 def sync_leetcode_sequential(username: str):
+    global leetcode_sync_lock
+    if leetcode_sync_lock:
+        print("LeetCode sync already running")
+        return 0
+
+    leetcode_sync_lock = True
     submissions = fetch_recent_submissions(username, limit=FETCH_LIMIT)
     new_count = 0
 
@@ -56,12 +69,21 @@ def sync_leetcode_sequential(username: str):
         if inserted:
             new_count += 1
 
+    update_last_leetcode_sync(int(time.time()))
+    leetcode_sync_lock = False
     end = time.perf_counter()
     return new_count, end - start
 
 
 
 def sync_leetcode_concurrent(username: str):
+    global leetcode_sync_lock
+    if leetcode_sync_lock:
+        print("LeetCode sync already running")
+        return 0
+
+    leetcode_sync_lock = True
+
     submissions = fetch_recent_submissions(username, limit=FETCH_LIMIT)
     new_count = 0
     to_fetch = []
@@ -115,10 +137,28 @@ def sync_leetcode_concurrent(username: str):
                     new_count += 1
 
             except Exception as e:
+                leetcode_sync_lock = False
                 print("Error:", e)
+
+    update_last_leetcode_sync(int(time.time()))
+    leetcode_sync_lock = False
 
     end = time.perf_counter()
     return new_count, end - start
+
+
+def maybe_sync_leetcode(username: str, min_gap_sec: int):
+    settings = get_settings()
+    last = settings.get("last_leetcode_sync") or 0
+    now = int(time.time())
+
+    if now - last < min_gap_sec:
+        print("LeetCode sync skipped (recent)")
+        return 0
+
+    # return sync_leetcode_sequential(username)
+    return sync_leetcode_concurrent(username)
+
 
 
 # -------------------------
