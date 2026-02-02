@@ -67,6 +67,16 @@ def init_db():
     except:
         pass
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS leetcode_problems (
+        problem_id INTEGER PRIMARY KEY,
+        title_slug TEXT UNIQUE,
+        title TEXT,
+        difficulty TEXT,
+        tags TEXT
+    )
+    """)
+
 
 
 
@@ -307,3 +317,48 @@ def insert_leetcode_submission(problem_id, title, title_slug, difficulty, tags, 
     conn.close()
 
     return inserted
+
+
+def get_cached_problem(title_slug):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT problem_id, title, title_slug, difficulty, tags
+        FROM leetcode_problems
+        WHERE title_slug = ?
+    """, (title_slug,))
+
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    return {
+        "problem_id": row[0],
+        "title": row[1],
+        "title_slug": row[2],
+        "difficulty": row[3],
+        "tags": row[4].split(",") if row[4] else []
+    }
+
+
+def cache_problem(problem):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT OR IGNORE INTO leetcode_problems
+        (problem_id, title_slug, title, difficulty, tags)
+        VALUES (?, ?, ?, ?, ?)
+    """, (
+        problem["problem_id"],
+        problem["title_slug"],
+        problem["title"],
+        problem["difficulty"],
+        ",".join(problem["tags"])
+    ))
+
+    conn.commit()
+    conn.close()

@@ -1,4 +1,8 @@
+FETCH_LIMIT = 20
+SLEEP_BETWEEN_REQUESTS = 0.4 # This need refinement.
+USERNAME="ratneshk01"
 import time
+from db import get_cached_problem, cache_problem
 
 from leetcode.client import (
     fetch_recent_submissions,
@@ -8,8 +12,7 @@ from leetcode.client import (
 from db import insert_leetcode_submission
 
 
-FETCH_LIMIT = 20
-SLEEP_BETWEEN_REQUESTS = 2
+
 
 
 def sync_leetcode(username: str):
@@ -23,9 +26,14 @@ def sync_leetcode(username: str):
         slug = sub["title_slug"]
         ts = sub["timestamp"]
 
-        details = fetch_problem_details(slug)
+        details = get_cached_problem(slug)
+
         if not details:
-            continue
+            details = fetch_problem_details(slug)
+            if not details:
+                continue
+            cache_problem(details)
+
 
         inserted = insert_leetcode_submission(
             details["problem_id"],
@@ -50,4 +58,4 @@ def sync_leetcode(username: str):
 # -------------------------
 
 if __name__ == "__main__":
-    sync_leetcode("ratneshk01")
+    sync_leetcode(USERNAME)
