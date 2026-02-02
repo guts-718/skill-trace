@@ -4,6 +4,7 @@ import TotalTime from "./components/TotalTime";
 import SessionTable from "./components/SessionTable";
 import { getDailyReport } from "./api";
 import DailyReport from "./components/DailyReport";
+import Settings from "./components/Settings";
 
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
 
       <DailyReport report={report} />
 
+      <Settings />
 
       {loading && <p>Loading...</p>}
 

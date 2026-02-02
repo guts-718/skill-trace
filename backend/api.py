@@ -91,3 +91,5 @@ def send_now():
     from scheduler import generate_and_send_once
     generate_and_send_once()
     return {"status": "sent"}
+
+
