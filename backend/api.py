@@ -8,6 +8,9 @@ from datetime import datetime, timezone
 from report_generator import generate_daily_report
 from db import get_settings, save_settings
 from pydantic import BaseModel
+from leetcode.sync import sync_leetcode
+from db import get_settings
+
 
 
 class OverrideRequest(BaseModel):
@@ -20,6 +23,15 @@ class SettingsRequest(BaseModel):
     telegram_chat_id: str
     enable_email: bool
     enable_telegram: bool
+
+
+class SettingsRequest(BaseModel):
+    report_time: str
+    email: str
+    telegram_chat_id: str
+    enable_email: bool
+    enable_telegram: bool
+    leetcode_username: str
 
 
 router = APIRouter()
@@ -93,3 +105,16 @@ def send_now():
     return {"status": "sent"}
 
 
+@router.post("/leetcode/sync")
+def leetcode_sync():
+    settings = get_settings()
+    username = settings.get("leetcode_username")
+
+    if not username:
+        return {"error": "leetcode_username not set"}
+
+    new_count = sync_leetcode(username)
+    return {
+        "status": "ok",
+        "new_records": new_count
+    }

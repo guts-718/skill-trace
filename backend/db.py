@@ -32,7 +32,8 @@ def init_db():
         telegram_chat_id TEXT,
         enable_email INTEGER,
         enable_telegram INTEGER,
-        last_sent_date TEXT
+        last_sent_date TEXT,
+        leetcode_username
     )
     """)
 
@@ -52,9 +53,20 @@ def init_db():
 
     cursor.execute("""
     INSERT OR IGNORE INTO user_settings
-    (id, report_time, email, telegram_chat_id, enable_email, enable_telegram, last_sent_date)
-    VALUES (1, "21:00", "", "", 0, 0, "")
+    (id, report_time, email, telegram_chat_id, enable_email, enable_telegram, last_sent_date, leetcode_username)
+    VALUES (1, "21:00", "", "", 0, 0, "", "")
+
     """)
+
+    # SQLite does not support IF NOT EXISTS for ADD COLUMN.
+    try:
+        cursor.execute("""
+        ALTER TABLE user_settings
+        ADD COLUMN leetcode_username TEXT
+        """)
+    except:
+        pass
+
 
 
 
@@ -203,17 +215,19 @@ def get_settings():
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT report_time, email, telegram_chat_id, enable_email, enable_telegram FROM user_settings WHERE id=1")
+    cur.execute("SELECT report_time, email, telegram_chat_id, enable_email, enable_telegram, leetcode_username FROM user_settings WHERE id=1")
     row = cur.fetchone()
     conn.close()
 
     return {
-        "report_time": row[0],
-        "email": row[1],
-        "telegram_chat_id": row[2],
-        "enable_email": bool(row[3]),
-        "enable_telegram": bool(row[4])
+    "report_time": row[0],
+    "email": row[1],
+    "telegram_chat_id": row[2],
+    "enable_email": bool(row[3]),
+    "enable_telegram": bool(row[4]),
+    "leetcode_username": row[5]
     }
+
 
 
 def save_settings(s):
@@ -223,18 +237,20 @@ def save_settings(s):
     cur.execute("""
         UPDATE user_settings
         SET report_time=?,
-            email=?,
-            telegram_chat_id=?,
-            enable_email=?,
-            enable_telegram=?,
-            last_sent_date=""
+        email=?,
+        telegram_chat_id=?,
+        enable_email=?,
+        enable_telegram=?,
+        leetcode_username=?,
+        last_sent_date=""
         WHERE id=1
     """, (
         s["report_time"],
         s["email"],
         s["telegram_chat_id"],
         int(s["enable_email"]),
-        int(s["enable_telegram"])
+        int(s["enable_telegram"]),
+        s.get("leetcode_username","")
     ))
 
     conn.commit()
