@@ -570,3 +570,17 @@ def get_total_solved_per_topic():
             totals[t] = totals.get(t, 0) + cnt
 
     return totals
+
+def get_all_solved_problem_ids():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT DISTINCT problem_id
+        FROM leetcode_submissions
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return set(r[0] for r in rows)

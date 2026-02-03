@@ -1,5 +1,9 @@
 import math
 import time
+from leetcode.client import fetch_problems
+from db import get_all_solved_problem_ids
+import random
+
 
 from db import (
     get_topic_last_seen,
@@ -92,3 +96,64 @@ def generate_topic_suggestions(k=3):
         })
 
     return result
+
+def generate_suggestions():
+    topics = generate_topic_suggestions()
+    final = []
+
+    for item in topics:
+        probs = select_problems_for_topic(
+            item["topic"],
+            item["difficulty"],
+            k=2
+        )
+
+        if not probs:
+            continue
+
+        final.append({
+            "topic": item["topic"],
+            "priority": item["priority"],
+            "problems": probs
+        })
+
+    return final
+
+
+# {'acRate': 47.79178582580149, 'difficulty': 'Medium', 'freqBar': None, 'questionFrontendId': '2', 
+# 'isFavor': False, 'isPaidOnly': False, 'status': None, 'title': 'Add Two Numbers', 
+# 'titleSlug': 'add-two-numbers', 'topicTags': [{'name': 'Linked List', 'id': 'VG9waWNUYWdOb2RlOjc=', '
+# 'slug': 'linked-list'}, {'name': 'Math', 'id': 'VG9waWNUYWdOb2RlOjg=', 'slug': 'math'}, 
+# {'name': 'Recursion', 'id': 'VG9waWNUYWdOb2RlOjMx', 'slug': 'recursion'}], 'hasSolution': True,
+#  'hasVideoSolution': True}
+
+
+def select_problems_for_topic(topic, difficulty, k=2):
+    problems = fetch_problems(topic, difficulty)
+    solved_ids = get_all_solved_problem_ids()
+
+    candidates = []
+    print("problems: ",problems["problemsetQuestionList"][0])
+    for p in problems["problemsetQuestionList"]:
+        pid = int(p["questionFrontendId"])
+        if pid in solved_ids:
+            continue
+
+        candidates.append(p)
+
+    if not candidates:
+        return []
+
+    import random
+    random.shuffle(candidates)
+    chosen = candidates[:k]
+
+    return [
+        {
+            "problem_id": int(p["questionFrontendId"]),
+            "title": p["title"],
+            "difficulty": p["difficulty"],
+            "link": f"https://leetcode.com/problems/{p['titleSlug']}"
+        }
+        for p in chosen
+    ]

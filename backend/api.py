@@ -20,6 +20,8 @@ from db import (
 from leetcode.client import fetch_leetcode_calendar
 from leetcode.suggestions import generate_topic_suggestions
 import time
+from leetcode.suggestions import generate_suggestions
+
 
 
 
@@ -171,6 +173,12 @@ def leetcode_calendar(year: int):
 
     return fetch_leetcode_calendar(username, year)
 
+# @router.get("/leetcode/suggestions")
+# def leetcode_suggestions():
+#     return generate_topic_suggestions()
+
+
+
 @router.get("/leetcode/suggestions")
 def leetcode_suggestions():
-    return generate_topic_suggestions()
+    return generate_suggestions()

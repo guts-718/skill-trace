@@ -4,9 +4,8 @@ import time
 BASE_URL = "https://alfa-leetcode-api.onrender.com"
 
 
-# -----------------------------
 # Fetch Recent Accepted Submissions
-# -----------------------------
+
 
 def fetch_recent_submissions(username: str, limit: int = 20, offset: int = 0):
     url = f"{BASE_URL}/{username}/acSubmission"
@@ -28,9 +27,8 @@ def fetch_recent_submissions(username: str, limit: int = 20, offset: int = 0):
 
 
 
-# -----------------------------
-# Fetch Problem Metadata
-# -----------------------------
+# fetch Problem Metadata
+
 
 def fetch_problem_details(title_slug: str):
     url = f"{BASE_URL}/select?titleSlug={title_slug}"
@@ -61,9 +59,15 @@ def fetch_leetcode_skill(username: str):
     return resp.json()
 
 
-# -----------------------------
+def fetch_problems(tag: str, difficulty: str):
+    url = f"{BASE_URL}/problems?tags={tag}&difficulty={difficulty.upper()}"
+    resp = requests.get(url, timeout=20)
+    resp.raise_for_status()
+    return resp.json()
+
+
 # Manual Test
-# -----------------------------
+
 
 if __name__ == "__main__":
     subs = fetch_recent_submissions("ratneshk01",5, 0)
@@ -72,4 +76,5 @@ if __name__ == "__main__":
     if subs:
         details = fetch_problem_details(subs[0]["title_slug"])
         print(details)
+
 
