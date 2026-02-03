@@ -87,13 +87,38 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS leetcode_skill_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        snapshot_json TEXT,
+        fetched_at INTEGER
+    )
+    """)
 
-
+    try:
+        cursor.execute("""
+        ALTER TABLE user_settings
+        ADD COLUMN last_skill_snapshot_date TEXT
+        """)
+    except:
+        pass
 
     conn.commit()
     conn.close()
 
 
+
+def update_last_skill_snapshot_date(date_str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE user_settings
+        SET last_skill_snapshot_date=?
+        WHERE id=1
+    """, (date_str,))
+    conn.commit()
+    conn.close()
+    
 def insert_session(session: Session):
     conn = get_connection()
     cursor = conn.cursor()
@@ -386,3 +411,110 @@ def update_last_leetcode_sync(ts: int):
 
     conn.commit()
     conn.close()
+
+
+## LC analytics
+
+def get_leetcode_total_solved():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(DISTINCT problem_id) FROM leetcode_submissions")
+    val = cur.fetchone()[0]
+    conn.close()
+    return val or 0
+
+
+def get_leetcode_difficulty_counts():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT difficulty, COUNT(*)
+        FROM leetcode_submissions
+        GROUP BY difficulty
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return {r[0]: r[1] for r in rows}
+
+
+def get_leetcode_recent(limit=10):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT title, difficulty, solved_at
+        FROM leetcode_submissions
+        ORDER BY solved_at DESC
+        LIMIT ?
+    """, (limit,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {"title": r[0], "difficulty": r[1], "timestamp": r[2]}
+        for r in rows
+    ]
+
+
+def get_topic_last_seen():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT tags, MAX(solved_at)
+        FROM leetcode_submissions
+        GROUP BY tags
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    topic_map = {}
+
+    for tags_str, ts in rows:
+        if not tags_str:
+            continue
+        tags = tags_str.split(",")
+        for t in tags:
+            if t not in topic_map or ts > topic_map[t]:
+                topic_map[t] = ts
+
+    return topic_map
+
+
+def insert_skill_snapshot(snapshot_json, ts):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO leetcode_skill_snapshots (snapshot_json, fetched_at)
+        VALUES (?, ?)
+    """, (snapshot_json, ts))
+
+    conn.commit()
+    conn.close()
+
+
+def get_latest_skill_snapshot():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT snapshot_json
+        FROM leetcode_skill_snapshots
+        ORDER BY fetched_at DESC
+        LIMIT 1
+    """)
+
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    import json
+    return json.loads(row[0])

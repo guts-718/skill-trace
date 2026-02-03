@@ -48,6 +48,19 @@ def fetch_problem_details(title_slug: str):
     }
 
 
+def fetch_leetcode_calendar(username: str, year: int):
+    url = f"{BASE_URL}/{username}/calendar?year={year}"
+    resp = requests.get(url, timeout=20)
+    resp.raise_for_status()
+    return resp.json()
+
+def fetch_leetcode_skill(username: str):
+    url = f"{BASE_URL}/{username}/skill"
+    resp = requests.get(url, timeout=20)
+    resp.raise_for_status()
+    return resp.json()
+
+
 # -----------------------------
 # Manual Test
 # -----------------------------

@@ -27,38 +27,14 @@ SkillTrace is different:
 
 ------------------------------------------------------------------------
 
-## Current Status
 
-Phase 1 implemented 
+## LeetCode metadata ingestion optimized using caching + bounded concurrency (4 workers).
 
--   Browser activity capture
--   Session merging
--   Local SQLite storage
--   Simple dashboard
+Cold-start benchmark (20 submissions):
+- Sequential: ~20–40 seconds
+- Concurrent: ~6–8 seconds
 
-Future phases will add classification, coding analytics, and
-recommendations.
-
-------------------------------------------------------------------------
-
-## Architecture (Phase 1)
-
-Browser Extension\
-→ Local FastAPI Backend\
-→ SQLite Database\
-→ React Dashboard
-
-------------------------------------------------------------------------
-
-## Features (Phase 1)
-
--   Track active browser tabs
--   Merge consecutive identical pages into sessions
--   Store sessions locally
--   View today's activity in a web dashboard
--   See total time spent
-
-------------------------------------------------------------------------
+Warm-cache runs complete in under 1 second.
 
 ## Tech Stack
 

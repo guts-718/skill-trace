@@ -11,6 +11,9 @@ from db import get_cached_problem, cache_problem
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 from db import update_last_leetcode_sync, get_settings
+from leetcode.client import fetch_leetcode_skill
+from db import insert_skill_snapshot,  update_last_skill_snapshot_date
+import json
 
 
 
@@ -143,7 +146,9 @@ def sync_leetcode_concurrent(username: str):
     update_last_leetcode_sync(int(time.time()))
     leetcode_sync_lock = False
 
+    maybe_store_skill_snapshot(username)
     end = time.perf_counter()
+
     return new_count, end - start
 
 
@@ -159,6 +164,23 @@ def maybe_sync_leetcode(username: str, min_gap_sec: int):
     # return sync_leetcode_sequential(username)
     return sync_leetcode_concurrent(username)
 
+
+
+def maybe_store_skill_snapshot(username: str):
+    today = time.strftime("%Y-%m-%d")
+
+    # reuse user_settings.last_sent_date style logic
+    settings = get_settings()
+    last = settings.get("last_skill_snapshot_date", "")
+
+    if last == today:
+        return
+
+    skill = fetch_leetcode_skill(username)
+    insert_skill_snapshot(json.dumps(skill), int(time.time()))
+
+    # reuse same table, add another column if needed later
+    update_last_skill_snapshot_date(today)
 
 
 # -------------------------

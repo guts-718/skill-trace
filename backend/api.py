@@ -11,6 +11,14 @@ from pydantic import BaseModel
 from leetcode.sync import sync_leetcode_sequential, sync_leetcode_concurrent
 from db import get_settings
 from leetcode.sync import maybe_sync_leetcode
+from db import (
+    get_leetcode_total_solved,
+    get_leetcode_difficulty_counts,
+    get_leetcode_recent,
+    get_topic_last_seen
+)
+from leetcode.client import fetch_leetcode_calendar
+
 
 
 
@@ -132,3 +140,31 @@ def leetcode_sync_ui():
 
     new_count = maybe_sync_leetcode(username, min_gap_sec=60) # for testing doing it 60 for prod would have it 300sec
     return {"status": "ok", "new_records": new_count}
+
+
+@router.get("/leetcode/stats")
+def leetcode_stats():
+    return {
+        "total_solved": get_leetcode_total_solved(),
+        "difficulty_counts": get_leetcode_difficulty_counts()
+    }
+
+
+@router.get("/leetcode/recent")
+def leetcode_recent():
+    return get_leetcode_recent(10)
+
+
+@router.get("/leetcode/topic-last-seen")
+def leetcode_topic_last_seen():
+    return get_topic_last_seen()
+
+@router.get("/leetcode/calendar")
+def leetcode_calendar(year: int):
+    settings = get_settings()
+    username = settings.get("leetcode_username")
+
+    if not username:
+        return {"error": "leetcode_username not set"}
+
+    return fetch_leetcode_calendar(username, year)
