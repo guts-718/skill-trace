@@ -59,7 +59,13 @@ def compute_topic_priorities():
         if total > 200:
             score *= 0.4
 
-        priorities[t] = score
+        priorities[t] = {
+            "score": score,
+            "days_since": days_since,
+            "total": total,
+            "recent": recent
+        }
+
 
     return priorities
 
@@ -81,19 +87,24 @@ def decide_difficulty():
 
 def generate_topic_suggestions(k=3):
     priorities = compute_topic_priorities()
-    ordered = sorted(priorities.items(),
-                     key=lambda x: x[1],
-                     reverse=True)
+    ordered = sorted(
+        priorities.items(),
+        key=lambda x: x[1]["score"],
+        reverse=True
+    )
+
 
     difficulty = decide_difficulty()
 
     result = []
-    for topic, score in ordered[:k]:
+    for topic, data in ordered[:k]:
         result.append({
             "topic": topic,
-            "priority": round(score, 3),
-            "difficulty": difficulty
+            "priority": data["score"],
+            "difficulty": difficulty,
+            "signals": data
         })
+
 
     return result
 
@@ -114,8 +125,10 @@ def generate_suggestions():
         final.append({
             "topic": item["topic"],
             "priority": item["priority"],
+            "reason": build_explanation(item["topic"], item["signals"]),
             "problems": probs
         })
+
 
     return final
 
@@ -157,3 +170,27 @@ def select_problems_for_topic(topic, difficulty, k=2):
         }
         for p in chosen
     ]
+
+def build_explanation(topic, signals):
+    reasons = []
+
+    days = int(signals["days_since"])
+    total = signals["total"]
+    recent = signals["recent"]
+
+    if total == 0:
+        reasons.append("You have never practiced this topic")
+
+    if days > 30:
+        reasons.append(f"Not practiced in {days} days")
+
+    if total < 30:
+        reasons.append(f"Only {total} problems solved so far")
+
+    if recent == 0:
+        reasons.append("No problems solved from this topic in the last week")
+
+    if not reasons:
+        reasons.append("Good topic for balanced practice")
+
+    return reasons
