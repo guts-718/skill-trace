@@ -1,7 +1,7 @@
 import sqlite3
 from config import DB_PATH
 from models import Session
-
+import time
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
@@ -118,7 +118,7 @@ def update_last_skill_snapshot_date(date_str):
     """, (date_str,))
     conn.commit()
     conn.close()
-    
+
 def insert_session(session: Session):
     conn = get_connection()
     cursor = conn.cursor()
@@ -518,3 +518,55 @@ def get_latest_skill_snapshot():
 
     import json
     return json.loads(row[0])
+
+
+# topic freq last n dats
+
+def get_topic_frequency(days: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cutoff = int(time.time()) - days * 86400
+
+    cur.execute("""
+        SELECT tags
+        FROM leetcode_submissions
+        WHERE solved_at >= ?
+    """, (cutoff,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    freq = {}
+
+    for (tags_str,) in rows:
+        if not tags_str:
+            continue
+        for t in tags_str.split(","):
+            freq[t] = freq.get(t, 0) + 1
+
+    return freq
+
+
+def get_total_solved_per_topic():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT tags, COUNT(*)
+        FROM leetcode_submissions
+        GROUP BY tags
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    totals = {}
+
+    for tags_str, cnt in rows:
+        if not tags_str:
+            continue
+        for t in tags_str.split(","):
+            totals[t] = totals.get(t, 0) + cnt
+
+    return totals

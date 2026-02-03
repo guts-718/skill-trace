@@ -18,6 +18,8 @@ from db import (
     get_topic_last_seen
 )
 from leetcode.client import fetch_leetcode_calendar
+from leetcode.suggestions import generate_topic_suggestions
+import time
 
 
 
@@ -168,3 +170,7 @@ def leetcode_calendar(year: int):
         return {"error": "leetcode_username not set"}
 
     return fetch_leetcode_calendar(username, year)
+
+@router.get("/leetcode/suggestions")
+def leetcode_suggestions():
+    return generate_topic_suggestions()
