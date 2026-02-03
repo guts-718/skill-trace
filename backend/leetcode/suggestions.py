@@ -3,6 +3,7 @@ import time
 from leetcode.client import fetch_problems
 from db import get_all_solved_problem_ids
 import random
+from leetcode.explainers.explainer import explain
 
 
 from db import (
@@ -60,11 +61,14 @@ def compute_topic_priorities():
             score *= 0.4
 
         priorities[t] = {
-            "score": score,
-            "days_since": days_since,
-            "total": total,
-            "recent": recent
+        "topic": t,
+        "priority": score,
+        "days_since_last": int(days_since),
+        "total_solved": total,
+        "recent_7d": recent,
+        "is_cold": total == 0,
         }
+
 
 
     return priorities
@@ -89,9 +93,10 @@ def generate_topic_suggestions(k=3):
     priorities = compute_topic_priorities()
     ordered = sorted(
         priorities.items(),
-        key=lambda x: x[1]["score"],
+        key=lambda x: x[1]["priority"],
         reverse=True
     )
+
 
 
     difficulty = decide_difficulty()
@@ -100,7 +105,7 @@ def generate_topic_suggestions(k=3):
     for topic, data in ordered[:k]:
         result.append({
             "topic": topic,
-            "priority": data["score"],
+            "priority": data["priority"],
             "difficulty": difficulty,
             "signals": data
         })
@@ -125,7 +130,7 @@ def generate_suggestions():
         final.append({
             "topic": item["topic"],
             "priority": item["priority"],
-            "reason": build_explanation(item["topic"], item["signals"]),
+            "reason": explain(item["signals"]),
             "problems": probs
         })
 
