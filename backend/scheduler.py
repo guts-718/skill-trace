@@ -18,8 +18,8 @@ def scheduler_loop():
             settings = get_settings()
             username = settings.get("leetcode_username")
 
-            if username:
-                maybe_sync_leetcode(username, min_gap_sec=1800)
+            # if username:
+            #     maybe_sync_leetcode(username, min_gap_sec=1800)
             report_time = settings["report_time"]  # "HH:MM"
             now = datetime.now()
             current_time = now.strftime("%H:%M")

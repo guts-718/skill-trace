@@ -65,8 +65,12 @@ def process_event(event):
     global last_session
     if last_session:
         print("LAST SESSION URL:", last_session.url)
+    indentifier="unknown"
+    if event.source == "browser":
+        identifier = event.url
+    elif event.source == "desktop":
+        identifier = event.app
 
-    
 
     if last_session is None:
         last_session = Session(

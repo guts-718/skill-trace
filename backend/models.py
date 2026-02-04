@@ -1,10 +1,21 @@
 from pydantic import BaseModel
 
+from typing import Optional
+from pydantic import BaseModel
+
 class Event(BaseModel):
-    url: str
-    domain: str
-    title: str
-    referrer: str | None = None
+    source: str
+
+    # browser fields
+    url: Optional[str] = None
+    domain: Optional[str] = None
+
+    # desktop fields
+    app: Optional[str] = None
+
+    # common
+    title: Optional[str] = None
+    referrer: Optional[str] = None
     timestamp: int
 
 
